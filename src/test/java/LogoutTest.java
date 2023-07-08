@@ -1,6 +1,8 @@
 import clients.UserClient;
 import io.qameta.allure.junit4.DisplayName;
-import model.*;
+import model.LoginPage;
+import model.MainPage;
+import model.ProfilePage;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -12,20 +14,34 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import pojo.CreateUser;
 
+import java.time.Duration;
+
+import static constants.constants.browserType;
+
 public class LogoutTest {
 
+    private final UserClient userClient = new UserClient();
+    private final String email = RandomStringUtils.randomAlphabetic(8) + "@yandex.ru";
+    private final String password = RandomStringUtils.randomAlphabetic(8);
+    private final String fieldEntrance = "Вход";
     private WebDriver driver;
-    private UserClient userClient = new UserClient();
-
     private String accessToken;
-    private String email    = RandomStringUtils.randomAlphabetic(8) + "@yandex.ru";
-    private String password = RandomStringUtils.randomAlphabetic(8);
 
     @Before
     public void createUser() {
         ChromeOptions options = new ChromeOptions();
+        switch (browserType) {
+            case "Yandex": {
+                System.setProperty("webdriver.chrome.driver", "c:/WebDriver/bin/yandexdriver.exe");
+                break;
+            }
+            case "Chrome": {
+                break;
+            }
+        }
         options.addArguments("--remote-allow-origins=*");
         driver = new ChromeDriver(options);
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
 
         CreateUser createUser = new CreateUser();
         createUser.setEmail(email);
@@ -41,20 +57,24 @@ public class LogoutTest {
     @Test
     @DisplayName("Выход по кнопке «Выйти» в личном кабинете")
     public void logoutTest() {
-        boolean result;
-        MainPage    mainPage    = new MainPage(driver);
-        LoginPage   loginPage   = new LoginPage(driver);
+        String result;
+        MainPage mainPage = new MainPage(driver);
+        LoginPage loginPage = new LoginPage(driver);
         ProfilePage profilePage = new ProfilePage(driver);
         mainPage.open();
+        mainPage.waitMain();
         mainPage.loginButtonClick();
+        loginPage.waitLoginPage();
         loginPage.sendFieldEmail(email);
         loginPage.sendFieldPassword(password);
         loginPage.loginButtonClick();
         mainPage.waitMain();
         mainPage.profileButtonClick();
+        profilePage.waitProfile();
         profilePage.logoutButtonClick();
+        loginPage.waitLoginPage();
         result = loginPage.checkFieldEntrance();
-        Assert.assertTrue(result);
+        Assert.assertEquals(fieldEntrance, result);
     }
 
     @After

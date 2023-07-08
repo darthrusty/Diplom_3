@@ -1,5 +1,6 @@
 package model;
 
+import io.qameta.allure.Step;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -11,11 +12,13 @@ public class RestorePasswordPage {
 
     private static final String PAGE_URL = "https://stellarburgers.nomoreparties.site/";
 
-    private final By fieldEmail    = By.xpath("//label[text()='Email']");
+    private final By fieldEmail = By.xpath("//label[text()='Email']");
 
     private final By restoreButton = By.xpath("//button[text()='Восстановить']");
 
-    private final By loginButton   = By.xpath("//a[text()='Войти']");
+    private final By loginButton = By.xpath("//a[text()='Войти']");
+
+    private final By restorePasswordPageInfo = By.xpath("//h2[text()='Восстановление пароля']");
 
     private final WebDriver driver;
 
@@ -28,16 +31,24 @@ public class RestorePasswordPage {
         return this;
     }
 
+    @Step("Нажатие кнопки Войти")
     public void loginButtonClick() {
-        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(loginButton)).click();
+        driver.findElement(loginButton).click();
     }
 
+    @Step("Нажатие кнопки Восстановить")
     public void restoreButtonClick() {
-        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(restoreButton)).click();
+        driver.findElement(restoreButton).click();
     }
 
-    public void  sendFieldEmail(String email) {
-        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(fieldEmail)).sendKeys(email);
+    @Step("Ввод почты")
+    public void sendFieldEmail(String email) {
+        driver.findElement(fieldEmail).sendKeys(email);
+    }
+
+    @Step("Ожидание перехода на страницу восстановление пароля")
+    public void waitRestorePasswordPage() {
+        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(restorePasswordPageInfo));
     }
 
 }

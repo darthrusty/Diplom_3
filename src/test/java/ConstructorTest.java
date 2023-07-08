@@ -8,62 +8,65 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
+import java.time.Duration;
+
+import static constants.constants.*;
+
 public class ConstructorTest {
 
     private WebDriver driver;
-
-    private final String bun      = "Булки";
-    private final String sauces   = "Соусы";
-    private final String fillings = "Начинки";
+    private MainPage mainPage;
 
     @Before
-    public void setUp() {
+    public void createUser() {
         ChromeOptions options = new ChromeOptions();
+        switch (browserType) {
+            case "Yandex": {
+                System.setProperty("webdriver.chrome.driver", "c:/WebDriver/bin/yandexdriver.exe");
+                break;
+            }
+            case "Chrome": {
+                break;
+            }
+        }
         options.addArguments("--remote-allow-origins=*");
         driver = new ChromeDriver(options);
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+
+        mainPage = new MainPage(driver);
+        mainPage.open();
+        mainPage.waitMain();
     }
 
     @Test
     @DisplayName("Переход к разделу конструктора «Булки»")
     public void bunButtonClickTest() {
-        String  text;
-        Boolean result;
-        MainPage mainPage = new MainPage(driver);
-        mainPage.open();
+        String result;
         mainPage.saucesButtonClick();
         mainPage.bunButtonClick();
         mainPage.checkActiveMenu(bun);
-        text   = mainPage.getActiveMenu();
-        result = text.equals(bun);
-        Assert.assertTrue(result);
+        result = mainPage.getActiveMenu();
+        Assert.assertEquals(bun, result);
     }
 
     @Test
     @DisplayName("Переход к разделу конструктора «Соусы»")
     public void saucesButtonClickTest() {
-        String  text;
-        Boolean result;
-        MainPage mainPage = new MainPage(driver);
-        mainPage.open();
+        String result;
         mainPage.saucesButtonClick();
         mainPage.checkActiveMenu(sauces);
-        text   = mainPage.getActiveMenu();
-        result = text.equals(sauces);
-        Assert.assertTrue(result);
+        result = mainPage.getActiveMenu();
+        Assert.assertEquals(sauces, result);
     }
 
     @Test
     @DisplayName("Переход к разделу конструктора «Начинки»")
     public void fillingsButtonClickTest() {
-        String  text;
-        Boolean result;
-        MainPage mainPage = new MainPage(driver);
-        mainPage.open();
+        String result;
         mainPage.fillingsButtonClick();
         mainPage.checkActiveMenu(fillings);
-        text   = mainPage.getActiveMenu();
-        result = text.equals(fillings);
-        Assert.assertTrue(result);
+        result = mainPage.getActiveMenu();
+        Assert.assertEquals(fillings, result);
     }
 
     @After

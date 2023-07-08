@@ -1,26 +1,28 @@
 package model;
 
-import java.time.Duration;
+import io.qameta.allure.Step;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
+
 public class LoginPage {
 
     private static final String PAGE_URL = "https://stellarburgers.nomoreparties.site/";
 
-    private final By fieldEmail            = By.xpath("//label[text()='Email']/..//input[@type='text']");
+    private final By fieldEmail = By.xpath("//label[text()='Email']/..//input[@type='text']");
 
-    private final By fieldPassword         = By.xpath("//label[text()='Пароль']/..//input[@type='password']");
+    private final By fieldPassword = By.xpath("//label[text()='Пароль']/..//input[@type='password']");
 
-    private final By loginButton           = By.xpath("//button[text()='Войти']");
+    private final By loginButton = By.xpath("//button[text()='Войти']");
 
-    private final By registerButton        = By.xpath("//a[text()='Зарегистрироваться']");
+    private final By registerButton = By.xpath("//a[text()='Зарегистрироваться']");
 
     private final By restorePasswordButton = By.xpath("//a[text()='Восстановить пароль']");
 
-    private final By fieldEntrance         = By.xpath("//h2[text()='Вход']");
+    private final By loginPageInfo = By.xpath("//h2[text()='Вход']");
 
     private final WebDriver driver;
 
@@ -33,34 +35,39 @@ public class LoginPage {
         return this;
     }
 
+    @Step("Нажатие на Войти")
     public void loginButtonClick() {
-        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(loginButton)).click();
+        driver.findElement(loginButton).click();
     }
 
+    @Step("Нажатие на Зарегистрироваться")
     public void registerButtonClick() {
-        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(registerButton)).click();
+        driver.findElement(registerButton).click();
     }
 
+    @Step("Нажатие на Восстановить пароль")
     public void restorePasswordButtonClick() {
-        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(restorePasswordButton)).click();
+        driver.findElement(restorePasswordButton).click();
     }
 
+    @Step("Ввод почты")
     public void sendFieldEmail(String email) {
-        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(fieldEmail)).sendKeys(email);
+        driver.findElement(fieldEmail).sendKeys(email);
     }
 
+    @Step("Ввод пароля")
     public void sendFieldPassword(String password) {
-        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(fieldPassword)).sendKeys(password);
+        driver.findElement(fieldPassword).sendKeys(password);
     }
 
-    public boolean checkFieldEntrance() {
-        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(fieldEntrance));
-        String text = driver.findElement(fieldEntrance).getText();
-        return text.equals("Вход");
+    @Step("Подтверждение перехода на вкладку Вход")
+    public String checkFieldEntrance() {
+        return driver.findElement(loginPageInfo).getText();
     }
 
-    public void waitFieldEntrance() {
-        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(fieldEntrance));
+    @Step("Ожидание перехода на вкладку Вход")
+    public void waitLoginPage() {
+        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(loginPageInfo));
     }
 
 }

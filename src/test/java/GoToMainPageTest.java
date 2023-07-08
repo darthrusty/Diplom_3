@@ -1,6 +1,8 @@
 import clients.UserClient;
 import io.qameta.allure.junit4.DisplayName;
-import model.*;
+import model.LoginPage;
+import model.MainPage;
+import model.ProfilePage;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -11,20 +13,42 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import pojo.CreateUser;
+
+import java.time.Duration;
+
+import static constants.constants.browserType;
+import static constants.constants.mainPageText;
+
 public class GoToMainPageTest {
 
+    private final UserClient userClient = new UserClient();
+    private final String email = RandomStringUtils.randomAlphabetic(8) + "@yandex.ru";
+    private final String password = RandomStringUtils.randomAlphabetic(8);
     private WebDriver driver;
-    private UserClient userClient = new UserClient();
-
     private String accessToken;
-    private String email    = RandomStringUtils.randomAlphabetic(8) + "@yandex.ru";
-    private String password = RandomStringUtils.randomAlphabetic(8);
+    private MainPage mainPage;
+    private LoginPage loginPage;
+    private ProfilePage profilePage;
 
     @Before
-    public void createUser() {
+    public void setUp() {
         ChromeOptions options = new ChromeOptions();
+        switch (browserType) {
+            case "Yandex": {
+                System.setProperty("webdriver.chrome.driver", "c:/WebDriver/bin/yandexdriver.exe");
+                break;
+            }
+            case "Chrome": {
+                break;
+            }
+        }
         options.addArguments("--remote-allow-origins=*");
         driver = new ChromeDriver(options);
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+
+        mainPage = new MainPage(driver);
+        loginPage = new LoginPage(driver);
+        profilePage = new ProfilePage(driver);
 
         CreateUser createUser = new CreateUser();
         createUser.setEmail(email);
@@ -35,46 +59,37 @@ public class GoToMainPageTest {
                 .statusCode(200)
                 .body("success", Matchers.equalTo(true))
                 .extract().jsonPath().get("accessToken");
+
+        mainPage.open();
+        mainPage.waitMain();
+        mainPage.loginButtonClick();
+        loginPage.waitLoginPage();
+        loginPage.sendFieldEmail(email);
+        loginPage.sendFieldPassword(password);
+        loginPage.loginButtonClick();
+        mainPage.waitMain();
+        mainPage.profileButtonClick();
+        profilePage.waitProfile();
     }
 
     @Test
     @DisplayName("Переход из личного кабинета в конструктор по клику на «Конструктор»")
     public void constructorButtonTest() {
-        boolean result;
-        MainPage    mainPage    = new MainPage(driver);
-        LoginPage   loginPage   = new LoginPage(driver);
-        ProfilePage profilePage = new ProfilePage(driver);
-        mainPage.open();
-        mainPage.loginButtonClick();
-        loginPage.sendFieldEmail(email);
-        loginPage.sendFieldPassword(password);
-        loginPage.loginButtonClick();
-        mainPage.waitMain();
-        mainPage.profileButtonClick();
-        profilePage.waitProfile();
+        String result;
         mainPage.constructorButtonClick();
+        mainPage.waitMain();
         result = mainPage.getMain();
-        Assert.assertTrue(result);
+        Assert.assertEquals(mainPageText, result);
     }
 
     @Test
     @DisplayName("Переход из личного кабинета в конструктор по клику на логотип")
     public void logoTest() {
-        boolean result;
-        MainPage    mainPage    = new MainPage(driver);
-        LoginPage   loginPage   = new LoginPage(driver);
-        ProfilePage profilePage = new ProfilePage(driver);
-        mainPage.open();
-        mainPage.loginButtonClick();
-        loginPage.sendFieldEmail(email);
-        loginPage.sendFieldPassword(password);
-        loginPage.loginButtonClick();
-        mainPage.waitMain();
-        mainPage.profileButtonClick();
-        profilePage.waitProfile();
+        String result;
         mainPage.logoClick();
+        mainPage.waitMain();
         result = mainPage.getMain();
-        Assert.assertTrue(result);
+        Assert.assertEquals(mainPageText, result);
     }
 
     @After

@@ -14,64 +14,78 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import pojo.LoginUser;
 
+import java.time.Duration;
+
+import static constants.constants.*;
+
 public class RegisterTest {
 
+    private final UserClient userClient = new UserClient();
+    private final String email = RandomStringUtils.randomAlphabetic(8) + "@yandex.ru";
+    private final String name = RandomStringUtils.randomAlphabetic(8);
+    private final String password = RandomStringUtils.randomAlphabetic(8);
+    private final String shortPassword = RandomStringUtils.randomAlphabetic(5);
     private WebDriver driver;
-    private UserClient userClient = new UserClient();
-    private String email         = RandomStringUtils.randomAlphabetic(8) + "@yandex.ru";
-    private String name          = RandomStringUtils.randomAlphabetic(8);
-    private String password      = RandomStringUtils.randomAlphabetic(8);
-    private String shortPassword = RandomStringUtils.randomAlphabetic(5);
+    private MainPage mainPage;
+    private LoginPage loginPage;
+    private RegisterPage registerPage;
 
     @Before
     public void setUp() {
         ChromeOptions options = new ChromeOptions();
+        switch (browserType) {
+            case "Yandex": {
+                System.setProperty("webdriver.chrome.driver", "c:/WebDriver/bin/yandexdriver.exe");
+                break;
+            }
+            case "Chrome": {
+                break;
+            }
+        }
         options.addArguments("--remote-allow-origins=*");
         driver = new ChromeDriver(options);
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+
+        mainPage = new MainPage(driver);
+        loginPage = new LoginPage(driver);
+        registerPage = new RegisterPage(driver);
+        mainPage.open();
+        mainPage.waitMain();
+        mainPage.loginButtonClick();
+        loginPage.waitLoginPage();
+        loginPage.registerButtonClick();
+        registerPage.waitRegisterPage();
+        registerPage.sendFieldName(name);
+        registerPage.sendFieldEmail(email);
     }
 
     @Test
     @DisplayName("Успешная регситрация")
     public void registerUserTest() {
-        boolean result;
-        MainPage     mainPage     = new MainPage(driver);
-        LoginPage    loginPage    = new LoginPage(driver);
-        RegisterPage registerPage = new RegisterPage(driver);
-        ProfilePage  profilePage  = new ProfilePage(driver);
-        mainPage.open();
-        mainPage.loginButtonClick();
-        loginPage.registerButtonClick();
-        registerPage.sendFieldName(name);
-        registerPage.sendFieldEmail(email);
+        String result;
+        ProfilePage profilePage = new ProfilePage(driver);
         registerPage.sendFieldPassword(password);
         registerPage.registerButtonClick();
-        loginPage.waitFieldEntrance();
+        loginPage.waitLoginPage();
         loginPage.sendFieldEmail(email);
         loginPage.sendFieldPassword(password);
         loginPage.loginButtonClick();
         mainPage.waitMain();
         mainPage.profileButtonClick();
+        profilePage.waitProfile();
         result = profilePage.checkProfile();
-        Assert.assertTrue(result);
+        Assert.assertEquals(profilePageText, result);
     }
 
     @Test
     @DisplayName("Ошибка регистрации для некорректного пароля. Минимальный пароль — шесть символов.")
     public void registerUserWithShortPasswordTest() {
-        boolean result;
-        MainPage     mainPage     = new MainPage(driver);
-        LoginPage    loginPage    = new LoginPage(driver);
-        RegisterPage registerPage = new RegisterPage(driver);
-        mainPage.open();
-        mainPage.loginButtonClick();
-        loginPage.registerButtonClick();
-        registerPage.sendFieldName(name);
-        registerPage.sendFieldEmail(email);
+        String result;
         registerPage.sendFieldPassword(shortPassword);
         registerPage.registerButtonClick();
         result = registerPage.checkErrorPasswordMessage();
-        Assert.assertTrue(result);
-   }
+        Assert.assertEquals(passwordErrorMessage, result);
+    }
 
     @After
     public void tearDown() {
